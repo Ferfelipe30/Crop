@@ -34,20 +34,23 @@ class shopPage extends State<shop>{
                       maxLines: 1,
                     ),
                   ),
-                  const SizedBox(width: 10,),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromRGBO(238, 177, 27, 1),
-                      foregroundColor: const Color.fromRGBO(50, 35, 12, 1),
-                    ),
-                    onPressed: (){
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => const shopped()));
-                    }, 
-                    child: const Icon(Icons.shopping_cart)),
                 ],
               ),
             ],
           ),)),
+      floatingActionButton: Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color.fromRGBO(238, 177, 27, 1),
+          ),
+        ),
+        child: FloatingActionButton(
+          onPressed: (){
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const shopped()));
+          },
+          child: const Icon(Icons.shopping_cart),
+        ),
+      ),
       backgroundColor: const Color.fromRGBO(59, 89, 29, 1),
     );
   }
