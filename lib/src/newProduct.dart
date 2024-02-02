@@ -1,6 +1,7 @@
 // ignore_for_file: file_names
 
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crop/src/nav.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -28,6 +29,7 @@ class newProductPage extends State<newProduct>{
   final nombre = TextEditingController();
   final email = TextEditingController();
   final celular = TextInputType.phone;
+  final firebase = FirebaseFirestore.instance;
 
   @override
   void dispose(){
@@ -91,6 +93,25 @@ class newProductPage extends State<newProduct>{
     );
     if (fechaSeleccionada != null && fechaSeleccionada != DateTime.now()) {
       fechaTermino.text = DateFormat('dd/MM/yyyy').format(fechaSeleccionada);
+    }
+  }
+
+  registroProducto() async {
+    try {
+      await firebase.collection('producto').doc().set({
+        'nombreProducto': nombreProducto.text,
+        'cantidadProducto': cantidadProducto.hashCode,
+        'fechaLanzamiento': fechaLanzamiento.text,
+        'fechaTermino': fechaTermino.text,
+        'direccion': direccion.text,
+        'descripcionProducto': descripcionProducto.text,
+        'nombre': nombre.text,
+        'email': email.text,
+        'celular': celular.hashCode,
+      });
+    } catch (e) {
+      // ignore: avoid_print
+      print('Error ...$e');
     }
   }
 
@@ -322,11 +343,27 @@ class newProductPage extends State<newProduct>{
                       ),
                     ),
                     onPressed: (){
+                      registroProducto();
+                      // ignore: avoid_print
+                      print('... Enviado');
                       if (formKey.currentState!.validate()) {
                         formKey.currentState!.save();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Producto nuevo registrado'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
                         Navigator.push(
                           context, 
                           MaterialPageRoute(builder: (context) => const nav()),
+                        );
+                      }else{
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Error de registro de producto nuevo'),
+                            backgroundColor: Colors.red,
+                          ),
                         );
                       }
                     }, 

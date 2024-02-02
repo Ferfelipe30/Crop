@@ -313,8 +313,20 @@ class openUserPage extends State<openUser>{
                     print('... Enviado');
                     if (formKey.currentState!.validate()) {
                       formKey.currentState!.save();
-
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Nuevo usuario registrado'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
                       Navigator.push(context, MaterialPageRoute(builder: (context) => const nav()));
+                    }else{
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Error de registro de nuevo Usuario'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
                     }
                   }, 
                   child: const Text('Login'),
