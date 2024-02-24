@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crop/src/shopped.dart';
 import 'package:flutter/material.dart';
 
@@ -35,6 +36,25 @@ class shopPage extends State<shop>{
                     ),
                   ),
                 ],
+              ), 
+              const SizedBox(height: 16,),
+              //Traer los datos y lea en la aplicacion de la base de datos de firebase
+              StreamBuilder(
+                stream: FirebaseFirestore.instance.collection('producto').snapshots(),
+                builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
+                if (!snapshot.hasData) {
+                  return const CircularProgressIndicator();
+                }
+                return ListView(
+                  shrinkWrap: true,
+                  children: snapshot.data!.docs.map((doc) {
+                    return ListTile(
+                      title: Text(doc['nombre']),
+                      subtitle: Text(doc['nombreProducto']),
+                    );
+                  }).toList(),
+                );
+                }
               ),
             ],
           ),)),
