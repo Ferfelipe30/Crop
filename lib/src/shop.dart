@@ -48,9 +48,21 @@ class shopPage extends State<shop>{
                 return ListView(
                   shrinkWrap: true,
                   children: snapshot.data!.docs.map((doc) {
-                    return ListTile(
-                      title: Text(doc['nombre']),
-                      subtitle: Text(doc['nombreProducto']),
+                    return Card(
+                      color: const Color.fromRGBO(238, 177, 27, 1),
+                      child: ListTile(
+                        leading: const FlutterLogo(size: 60.0,),
+                        title: Text(doc['nombreProducto']),
+                        subtitle: Text(doc['descripcionProducto']),
+                        trailing: IconButton(
+                          style: IconButton.styleFrom(
+                            backgroundColor: const Color.fromRGBO(50, 35, 12, 1),
+                            foregroundColor: const Color.fromRGBO(255, 255, 255, 1),
+                          ),
+                          onPressed: (){}, 
+                          icon: const Icon(Icons.shopify_rounded),
+                        ),
+                      ),
                     );
                   }).toList(),
                 );

@@ -1,5 +1,6 @@
 // ignore_for_file: file_names
 
+import 'dart:async';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crop/src/nav.dart';
@@ -9,86 +10,108 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 // ignore: camel_case_types
-class newProduct extends StatefulWidget{
+class newProduct extends StatefulWidget {
   const newProduct({super.key});
 
   @override
   State<newProduct> createState() => newProductPage();
 }
 
+enum SelectSource { camara, galeria }
+
 // ignore: camel_case_types
-class newProductPage extends State<newProduct>{
+class newProductPage extends State<newProduct> {
   final formKey = GlobalKey<FormState>();
-  File? image;
   final fechaLanzamiento = TextEditingController();
   final fechaTermino = TextEditingController();
   final nombreProducto = TextEditingController();
   final cantidadProducto = TextInputType.number;
+  final precio = TextInputType.number;
   final direccion = TextEditingController();
   final descripcionProducto = TextEditingController();
   final nombre = TextEditingController();
   final email = TextEditingController();
   final celular = TextInputType.phone;
   final firebase = FirebaseFirestore.instance;
+  final picker = ImagePicker();
+  File? image;
 
   @override
-  void dispose(){
+  void dispose() {
     super.dispose();
     descripcionProducto.dispose();
   }
 
-  Future<void> _getImage(ImageSource source) async {
-    final imagePicker = ImagePicker();
-    final pickedFile = await imagePicker.pickImage(source: source);
+  Future<void> _getImage() async {
+    final pickedImage =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
 
-    if (pickedFile != null) {
-      setState(() {
-        image = File(pickedFile.path);
-      });
-    }
+    setState(() {
+      if (pickedImage != null) {
+        image = File(pickedImage.path);
+      } else {
+        // ignore: avoid_print
+        print('No image selected.');
+      }
+    });
+  }
+
+  Future<void> getImage() async {
+    final pickedImage =
+        await ImagePicker().pickImage(source: ImageSource.camera);
+
+    setState(() {
+      if (pickedImage != null) {
+        image = File(pickedImage.path);
+      } else {
+        // ignore: avoid_print
+        print('No image selected.');
+      }
+    });
   }
 
   Future<void> seleccionarFechaLanzamiento(BuildContext context) async {
     final DateTime? fechaSeleccionada = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(), 
-      firstDate: DateTime(1900), 
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
       lastDate: DateTime.now(),
       builder: (BuildContext context, Widget? child) {
         return Theme(
-          data: ThemeData.light().copyWith(
-            primaryColor: const Color.fromRGBO(238, 117, 27, 1),
-            colorScheme: const ColorScheme.light(
-              primary: Color.fromRGBO(238, 177, 27, 1),
+            data: ThemeData.light().copyWith(
+              primaryColor: const Color.fromRGBO(238, 117, 27, 1),
+              colorScheme: const ColorScheme.light(
+                primary: Color.fromRGBO(238, 177, 27, 1),
+              ),
+              buttonTheme:
+                  const ButtonThemeData(textTheme: ButtonTextTheme.primary),
             ),
-            buttonTheme: const ButtonThemeData(textTheme: ButtonTextTheme.primary),
-          ), 
-          child: child!
-        ); 
+            child: child!);
       },
     );
     if (fechaSeleccionada != null && fechaSeleccionada != DateTime.now()) {
-      fechaLanzamiento.text = DateFormat('dd/MM/yyyy').format(fechaSeleccionada);
+      fechaLanzamiento.text =
+          DateFormat('dd/MM/yyyy').format(fechaSeleccionada);
     }
   }
 
   Future<void> seleccionarFechaTermino(BuildContext context) async {
     final DateTime? fechaSeleccionada = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(), 
-      firstDate: DateTime(1900), 
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
       lastDate: DateTime.now(),
       builder: (BuildContext context, Widget? child) {
         return Theme(
-          data: ThemeData.light().copyWith(
-            primaryColor: const Color.fromRGBO(238, 117, 27, 1),
-            colorScheme: const ColorScheme.light(
-              primary: Color.fromRGBO(238, 177, 27, 1),
+            data: ThemeData.light().copyWith(
+              primaryColor: const Color.fromRGBO(238, 117, 27, 1),
+              colorScheme: const ColorScheme.light(
+                primary: Color.fromRGBO(238, 177, 27, 1),
+              ),
+              buttonTheme:
+                  const ButtonThemeData(textTheme: ButtonTextTheme.primary),
             ),
-            buttonTheme: const ButtonThemeData(textTheme: ButtonTextTheme.primary),
-          ), 
-          child: child!
-        ); 
+            child: child!);
       },
     );
     if (fechaSeleccionada != null && fechaSeleccionada != DateTime.now()) {
@@ -108,15 +131,16 @@ class newProductPage extends State<newProduct>{
         'nombre': nombre.text,
         'email': email.text,
         'celular': celular.hashCode,
+        'precio': precio.hashCode,
       });
-    } catch (e) {
+    } catch (error) {
       // ignore: avoid_print
-      print('Error ...$e');
+      print('Error deconocido: $error');
     }
   }
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     return Scaffold(
       body: Form(
         key: formKey,
@@ -126,37 +150,43 @@ class newProductPage extends State<newProduct>{
               padding: const EdgeInsets.all(16),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
+                  // ignore: unnecessary_null_comparison
                   image == null
-                  ? const Icon(
-                    Icons.image,
-                    color: Color.fromRGBO(50, 35, 12, 1),
-                  )
-                  :CircleAvatar(
-                    radius: 80,
-                    backgroundColor: const Color.fromRGBO(238, 177, 27, 1),
-                    backgroundImage: FileImage(image!),
+                      ? const CircleAvatar(
+                          radius: 80,
+                          backgroundColor: Color.fromRGBO(238, 177, 27, 1),
+                          child: Icon(Icons.image),
+                        )
+                      : Image.file(
+                          image!,
+                          width: 200,
+                          height: 200,
+                          fit: BoxFit.cover,
+                        ),
+                  const SizedBox(
+                    height: 20,
                   ),
-                  const SizedBox(height: 20,),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       ElevatedButton(
-                        onPressed: (){
-                          _getImage(ImageSource.camera);
-                        }, 
+                        onPressed: getImage,
                         child: const Icon(Icons.add_a_photo_outlined),
                       ),
-                      const SizedBox(width: 10,),
+                      const SizedBox(
+                        width: 10,
+                      ),
                       ElevatedButton(
-                        onPressed: (){
-                          _getImage(ImageSource.gallery);
-                        }, 
+                        onPressed: _getImage,
                         child: const Icon(Icons.add_photo_alternate),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20,),
+                  const SizedBox(
+                    height: 20,
+                  ),
                   //Nombre del producto
                   TextFormField(
                     maxLines: 1,
@@ -174,7 +204,9 @@ class newProductPage extends State<newProduct>{
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16,),
+                  const SizedBox(
+                    height: 16,
+                  ),
                   //Cantidad de productos
                   TextFormField(
                     maxLines: 1,
@@ -195,14 +227,38 @@ class newProductPage extends State<newProduct>{
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16,),
+                  const SizedBox(
+                    height: 16,
+                  ),
+                  TextFormField(
+                    maxLines: 1,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: <TextInputFormatter>[
+                      FilteringTextInputFormatter.digitsOnly
+                    ],
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Precio',
+                      fillColor: Color.fromRGBO(238, 177, 27, 1),
+                      filled: true,
+                    ),
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'Ingrese el valor por unidad del precio del producto';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(
+                    height: 16,
+                  ),
                   // Fecha de Lanzamiento
                   TextFormField(
                     maxLines: 1,
                     controller: fechaLanzamiento,
                     decoration: InputDecoration(
                       suffixIcon: IconButton(
-                        onPressed: () => seleccionarFechaLanzamiento(context), 
+                        onPressed: () => seleccionarFechaLanzamiento(context),
                         icon: const Icon(Icons.calendar_today),
                       ),
                       fillColor: const Color.fromRGBO(238, 177, 27, 1),
@@ -217,16 +273,18 @@ class newProductPage extends State<newProduct>{
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16,),
+                  const SizedBox(
+                    height: 16,
+                  ),
                   //Fecha de Termino
                   TextFormField(
                     maxLines: 1,
                     controller: fechaTermino,
                     decoration: InputDecoration(
                       suffixIcon: IconButton(
-                        onPressed: () => seleccionarFechaTermino(context), 
+                        onPressed: () => seleccionarFechaTermino(context),
                         icon: const Icon(Icons.calendar_today),
-                      ), 
+                      ),
                       fillColor: const Color.fromRGBO(238, 177, 27, 1),
                       filled: true,
                       labelText: 'Fecha de Termino',
@@ -239,7 +297,9 @@ class newProductPage extends State<newProduct>{
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16,),
+                  const SizedBox(
+                    height: 16,
+                  ),
                   //direccion
                   TextFormField(
                     maxLines: 1,
@@ -257,7 +317,9 @@ class newProductPage extends State<newProduct>{
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16,),
+                  const SizedBox(
+                    height: 16,
+                  ),
                   //Descripcion del Producto
                   TextFormField(
                     maxLines: 10,
@@ -275,7 +337,9 @@ class newProductPage extends State<newProduct>{
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16,),
+                  const SizedBox(
+                    height: 16,
+                  ),
                   //Nombre del vendedor
                   TextFormField(
                     maxLines: 1,
@@ -293,7 +357,9 @@ class newProductPage extends State<newProduct>{
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16,),
+                  const SizedBox(
+                    height: 16,
+                  ),
                   //Correo
                   TextFormField(
                     maxLines: 1,
@@ -311,7 +377,9 @@ class newProductPage extends State<newProduct>{
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16,),
+                  const SizedBox(
+                    height: 16,
+                  ),
                   //Numero de celular
                   TextFormField(
                     maxLines: 1,
@@ -332,7 +400,9 @@ class newProductPage extends State<newProduct>{
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16,),
+                  const SizedBox(
+                    height: 16,
+                  ),
                   //Boton de publicar
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
@@ -342,7 +412,7 @@ class newProductPage extends State<newProduct>{
                         borderRadius: BorderRadius.circular(20.0),
                       ),
                     ),
-                    onPressed: (){
+                    onPressed: () {
                       registroProducto();
                       // ignore: avoid_print
                       print('... Enviado');
@@ -355,20 +425,21 @@ class newProductPage extends State<newProduct>{
                           ),
                         );
                         Navigator.push(
-                          context, 
+                          context,
                           MaterialPageRoute(builder: (context) => const nav()),
                         );
-                      }else{
+                      } else {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Error de registro de producto nuevo'),
+                            content:
+                                Text('Error de registro de producto nuevo'),
                             backgroundColor: Colors.red,
                           ),
                         );
                       }
-                    }, 
+                    },
                     child: const Text('Publicar'),
-                    ),
+                  ),
                 ],
               ),
             ),

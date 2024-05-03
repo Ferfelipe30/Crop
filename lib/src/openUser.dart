@@ -18,7 +18,7 @@ class openUser extends StatefulWidget{
 // ignore: camel_case_types
 class openUserPage extends State<openUser>{
   final formKey = GlobalKey<FormState>();
-  File? image;
+  XFile? image;
   final nombre = TextEditingController();
   final email = TextEditingController();
   final password = TextEditingController();
@@ -35,7 +35,7 @@ class openUserPage extends State<openUser>{
 
     if (pickedFile != null) {
       setState(() {
-        image = File(pickedFile.path);
+        image = pickedFile;
       });
     }
   }
@@ -93,15 +93,12 @@ class openUserPage extends State<openUser>{
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 //Foto de perfil
-                image == null 
-                ? const Icon(
-                  Icons.image, 
-                  color: Color.fromRGBO(50, 35, 12, 1))
-                : CircleAvatar(
-                    radius: 80, 
-                    backgroundColor: const Color.fromRGBO(238, 177, 27, 1),
-                    backgroundImage: FileImage(image!),
-                  ),
+                image != null 
+                ? Image.file(File(image!.path))
+                : const Placeholder(
+                  fallbackHeight: 200,
+                  fallbackWidth: 200,
+                ),
                 const SizedBox(height: 20,),
                 //Botones de camara y galeria.
                 Row(
@@ -295,7 +292,7 @@ class openUserPage extends State<openUser>{
                       return 'Ingrese la direccion';
                     }
                     return null;
-                  }, 
+                  },
                 ),
                 const SizedBox(height: 20,),
                 //Boton de registro
@@ -307,7 +304,7 @@ class openUserPage extends State<openUser>{
                       borderRadius: BorderRadius.circular(20.0),
                     ),
                   ),
-                  onPressed: (){
+                  onPressed: () async {
                     registroUsuario();
                     // ignore: avoid_print
                     print('... Enviado');
@@ -335,7 +332,7 @@ class openUserPage extends State<openUser>{
             ),
           ),
         ),
-),
+      ),
               ),
       backgroundColor: const Color.fromRGBO(59, 89, 29, 1),
     );

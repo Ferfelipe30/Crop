@@ -1,6 +1,5 @@
 import 'package:crop/src/home.dart';
 import 'package:crop/src/newProduct.dart';
-import 'package:crop/src/shop.dart';
 import 'package:crop/src/user.dart';
 import 'package:flutter/material.dart';
 
@@ -18,7 +17,6 @@ class navPage extends State<nav>{
 
   final List<Widget> children = [
     const home(),
-    const shop(),
     const newProduct(),
     const user(),
   ];
@@ -38,11 +36,6 @@ class navPage extends State<nav>{
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Home',
-          ),
-          //Boton shop
-          BottomNavigationBarItem(
-            icon: Icon(Icons.store),
-            label: 'Shop',
           ),
           //Boton new Product
           BottomNavigationBarItem(
